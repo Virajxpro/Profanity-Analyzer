@@ -95,8 +95,9 @@ app.post('/api/analyze', async (req, res) => {
 
   const id = uuidv4();
   const outputAudio = path.join(downloadsDir, `${id}.mp3`);
-  // const outputVideo = path.join(downloadsDir, `${id}.mp4`);
 
+  //This block of code is for video downloading
+  // const outputVideo = path.join(downloadsDir, `${id}.mp4`);
   try {
     // await ytdlp(url, {
     //   output: outputVideo,
@@ -104,7 +105,8 @@ app.post('/api/analyze', async (req, res) => {
     //   quiet: true,
     //   ffmpegLocation: ffmpegPath
     // });
-
+    
+  //This block of code is for audio download
     await ytdlp(url, {
       output: outputAudio,
       extractAudio: true,
