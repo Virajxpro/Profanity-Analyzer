@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vulgarity Analysis Results</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f0ff;
+      color: #333;
+    }
+    header {
+     text-align: center;
+    }
+    header h1 {
+    display: inline-block;
+    text-align: center;
+    font-size: 1.8em;
+    background: white;
+    color: #6c2bd9;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.06);
+    margin-top: 28px;
+    }
+
+
+    .container {
+      padding-left: 50px;
+      padding-right: 50px;
+      padding: 30px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .content-box {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.06);
+  margin-bottom: 30px;
+  margin-left: auto;
+  margin-right: auto;
+}
+    .summary, .content-box {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.06);
+      margin-bottom: 30px;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #6c2bd9;
+    }
+
+    #transcript {
+      white-space: pre-wrap;
+      line-height: 1.6;
+      max-height: 200px;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+
+    #transcript.expanded {
+      max-height: none;
+    }
+
+    .read-more {
+      margin-top: 10px;
+      color: #6c2bd9;
+      background: none;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 0;
+    }
+    .chart-box {
+     max-width: 700px; /* or whatever smaller size you prefer */
+    }
+
+    canvas {
+      max-width: 100%;
+      margin: auto;
+      display: block;
+    }
+  </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+   <!-- Navbar -->
+   <nav class="bg-violet-200 px-6 py-3 flex justify-center items-center">
+    <div class="flex items-center space-x-10">
+      <div class="text-2xl font-bold text-black mr-80">Vulgarity ratio</div>
+      <div class="space-x-8 text-black font-medium hidden md:flex">
+        <a href="index.html">Youtube Link</a>
+        <a href="Audio.html">Audio Upload</a>
+      </div>
+    </div>
+</nav> 
+
+  <header>
+    <h1>Vulgarity Analysis Results</h1>
+  </header>
+
+  <div class="container">
+    <div class="summary" id="results">Loading...</div>
+
+    <div class="content-box">
+      <h2 class="label">Transcript</h2>
+      <div id="transcript">Loading transcript...</div>
+      <button class="read-more" onclick="toggleTranscript()">Read more</button>
+    </div>
+
+    <div class="content-box chart-box">
+      <h2 class="label">Vulgarity Chart</h2>
+      <canvas id="chart" width="450" height="450"></canvas>
+    </div>
+  </div>
+  <script>
+    async function loadResult() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      if (!id) {
+        document.getElementById('results').innerText = 'No result ID found';
+        return;
+      }
+
+      const res = await fetch(`/api/result/${id}`);
+      if (!res.ok) {
+        document.getElementById('results').innerText = 'Failed to load result';
+        return;
+      }
+
+      const data = await res.json();
+      const totalVulgar = data.totalVulgarWords;
+      const totalWords = data.transcript.split(/\s+/).length;
+      const totalClean = totalWords - totalVulgar;
+
+      document.getElementById('results').innerHTML = `
+        <p><span class="label">Total words:</span> ${totalWords}</p>
+        <p><span class="label">Total vulgar words:</span> ${totalVulgar}</p>
+      `;
+
+      document.getElementById('transcript').innerText = data.transcript;
+
+      const ctx = document.getElementById('chart').getContext('2d');
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Vulgar Words', 'Clean Words'],
+          datasets: [{
+            data: [totalVulgar, totalClean],
+            backgroundColor: ['#e74c3c', '#854ae6'],
+            hoverOffset: 10
+          }]
+        },
+        options: {
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+    }
+
+    function toggleTranscript() {
+      const transcript = document.getElementById('transcript');
+      const button = document.querySelector('.read-more');
+      transcript.classList.toggle('expanded');
+      button.textContent = transcript.classList.contains('expanded') ? 'Read less' : 'Read more';
+    }
+
+    window.onload = loadResult;
+  </script>
+</body>
+</html>
