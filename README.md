@@ -38,5 +38,5 @@ Just clone the repo, install dependencies, and you're ready to scan!
 git clone https://github.com/your-username/profanity-analyzer.git
 cd profanity-analyzer
 npm install
-npm start 
+node server.js 
 ```
